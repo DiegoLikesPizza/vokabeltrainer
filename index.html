@@ -116,16 +116,17 @@
         <div class="flashcard" id="flashcard">
           <div class="flashcard-stage" id="flashcard-stage">Fach 1</div>
           <div class="flashcard-prompt" id="flashcard-prompt">Loading...</div>
-          <div class="flashcard-answer-area" id="flashcard-answer-area">
-            <input type="text" id="answer-input" class="answer-input" placeholder="Deine Antwort..." autocomplete="off" spellcheck="false">
-            <button class="btn btn-primary" id="check-btn">Prüfen</button>
+          <div class="flashcard-reveal-area" id="flashcard-reveal-area">
+            <button class="btn btn-primary btn-lg" id="reveal-btn">👁️ Lösung anzeigen</button>
           </div>
-          <div class="flashcard-result" id="flashcard-result" style="display:none;">
-            <div class="result-icon" id="result-icon"></div>
-            <div class="result-correct-answer" id="result-correct-answer"></div>
-            <div class="result-your-answer" id="result-your-answer"></div>
-            <div class="stage-change" id="stage-change"></div>
-            <button class="btn btn-primary" id="next-btn">Nächste Karte →</button>
+          <div class="flashcard-assessment-area" id="flashcard-assessment-area" style="display:none;">
+            <div class="revealed-label">Lösung:</div>
+            <div class="revealed-translation" id="revealed-translation"></div>
+            <div class="assessment-actions">
+              <button class="btn btn-danger btn-lg" id="mark-wrong-btn">❌ Nicht gewusst</button>
+              <button class="btn btn-success btn-lg" id="mark-correct-btn">✅ Gewusst</button>
+            </div>
+            <div class="assessment-hint">Tastenkürzel: [1] Nicht gewusst &nbsp;|&nbsp; [2] Gewusst</div>
           </div>
         </div>
       </div>

@@ -56,15 +56,12 @@
   const flashcard = $('#flashcard');
   const flashcardStage = $('#flashcard-stage');
   const flashcardPrompt = $('#flashcard-prompt');
-  const answerArea = $('#flashcard-answer-area');
-  const answerInput = $('#answer-input');
-  const checkBtn = $('#check-btn');
-  const resultArea = $('#flashcard-result');
-  const resultIcon = $('#result-icon');
-  const resultCorrectAnswer = $('#result-correct-answer');
-  const resultYourAnswer = $('#result-your-answer');
-  const stageChange = $('#stage-change');
-  const nextBtn = $('#next-btn');
+  const revealArea = $('#flashcard-reveal-area');
+  const revealBtn = $('#reveal-btn');
+  const assessmentArea = $('#flashcard-assessment-area');
+  const revealedTranslation = $('#revealed-translation');
+  const markWrongBtn = $('#mark-wrong-btn');
+  const markCorrectBtn = $('#mark-correct-btn');
 
   // Results
   const finalCorrect = $('#final-correct');
@@ -292,13 +289,9 @@
     const prompt = currentDirection === 'en-de' ? vocab.english : vocab.german;
     flashcardPrompt.textContent = prompt;
 
-    // Reset answer area
-    answerArea.style.display = 'flex';
-    resultArea.style.display = 'none';
-    answerInput.value = '';
-    answerInput.className = 'answer-input';
-    answerInput.placeholder = currentDirection === 'en-de' ? 'Deutsche Übersetzung...' : 'English translation...';
-    answerInput.focus();
+    // Reset areas
+    revealArea.style.display = 'block';
+    assessmentArea.style.display = 'none';
 
     // Re-trigger card animation
     flashcard.style.animation = 'none';
@@ -306,64 +299,35 @@
     flashcard.style.animation = '';
   }
 
-  function normalize(str) {
-    return str
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, ' ')
-      // Normalize German special chars
-      .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
-      .replace(/[.,;:!?'"()\/\-]/g, '');
+  function revealTranslation() {
+    const vocab = practiceQueue[practiceIndex];
+    const answer = currentDirection === 'en-de' ? vocab.german : vocab.english;
+    
+    revealedTranslation.textContent = answer;
+    
+    revealArea.style.display = 'none';
+    assessmentArea.style.display = 'flex';
   }
 
-  function checkAnswer() {
+  function handleAssessment(isCorrect) {
     const vocab = practiceQueue[practiceIndex];
-    const correctFull = currentDirection === 'en-de' ? vocab.german : vocab.english;
-    const userAnswer = answerInput.value.trim();
-
-    if (!userAnswer) return;
-
-    // Check against all possible answers (split by comma)
-    const possibleAnswers = correctFull.split(',').map(a => a.trim());
-    const normalizedUser = normalize(userAnswer);
-
-    const isCorrect = possibleAnswers.some(answer => {
-      const norm = normalize(answer);
-      // Exact match or close enough
-      return norm === normalizedUser || norm.includes(normalizedUser) || normalizedUser.includes(norm);
-    });
-
-    // Update stage
     const oldStage = vocab.stage;
+
     if (isCorrect) {
       vocab.stage = Math.min(MAX_STAGE, vocab.stage + 1);
       sessionCorrect++;
-      answerInput.classList.add('correct');
+      toast(oldStage < MAX_STAGE ? `Fach ${oldStage} → ${vocab.stage} ⬆️` : `Fach ${MAX_STAGE} — Gemeistert! 🌟`);
     } else {
       vocab.stage = Math.max(1, vocab.stage - 1);
       sessionWrong++;
-      answerInput.classList.add('wrong');
+      toast(oldStage > 1 ? `Fach ${oldStage} → ${vocab.stage} ⬇️` : `Fach 1 — Weiter üben! 💪`);
     }
 
-    // Show result
-    answerArea.style.display = 'none';
-    resultArea.style.display = 'flex';
-
-    resultIcon.textContent = isCorrect ? '✅' : '❌';
-    resultCorrectAnswer.innerHTML = `<strong>Richtig:</strong> ${correctFull}`;
-    resultYourAnswer.innerHTML = isCorrect ? '' : `<strong>Deine Antwort:</strong> ${userAnswer}`;
-
-    if (isCorrect) {
-      stageChange.className = 'stage-change up';
-      stageChange.textContent = oldStage < MAX_STAGE ? `Fach ${oldStage} → ${vocab.stage} ⬆️` : `Fach ${MAX_STAGE} — Gemeistert! 🌟`;
-    } else {
-      stageChange.className = 'stage-change down';
-      stageChange.textContent = oldStage > 1 ? `Fach ${oldStage} → ${vocab.stage} ⬇️` : `Fach 1 — Weiter üben! 💪`;
-    }
-
-    // Update score display
+    // Update score display immediately
     scoreCorrectEl.textContent = `✅ ${sessionCorrect}`;
     scoreWrongEl.textContent = `❌ ${sessionWrong}`;
+
+    nextCard();
   }
 
   function nextCard() {
@@ -513,25 +477,30 @@
   // Dashboard: Start practice
   startPracticeBtn.addEventListener('click', startPractice);
 
-  // Practice: Check answer
-  checkBtn.addEventListener('click', checkAnswer);
-  answerInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      if (resultArea.style.display === 'none' || resultArea.style.display === '') {
-        checkAnswer();
-      }
-    }
-  });
+  // Practice: Setup Event Listeners
+  revealBtn.addEventListener('click', revealTranslation);
+  markCorrectBtn.addEventListener('click', () => handleAssessment(true));
+  markWrongBtn.addEventListener('click', () => handleAssessment(false));
 
-  // Practice: Next card
-  nextBtn.addEventListener('click', nextCard);
-
-  // Also allow Enter and Space to go to next card when result is shown
+  // Keyboard navigation
   document.addEventListener('keydown', (e) => {
-    if (screens.practice.classList.contains('active') && resultArea.style.display === 'flex') {
+    if (!screens.practice.classList.contains('active')) return;
+    
+    // Check if modal dialog is active
+    if (document.querySelector('.modal-overlay')) return;
+
+    if (revealArea.style.display !== 'none') {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        nextCard();
+        revealTranslation();
+      }
+    } else if (assessmentArea.style.display !== 'none') {
+      if (e.key === '1' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        handleAssessment(false); // wrong
+      } else if (e.key === '2' || e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        handleAssessment(true);  // correct
       }
     }
   });

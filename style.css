@@ -458,82 +458,62 @@ body {
   justify-content: center;
 }
 
-.flashcard-answer-area {
+.btn-success {
+  background: var(--success);
+  color: #000;
+  box-shadow: 0 4px 15px rgba(46, 232, 154, 0.3);
+}
+.btn-success:hover {
+  background: #24c682;
+  box-shadow: 0 6px 20px rgba(46, 232, 154, 0.4);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(255, 92, 124, 0.3);
+}
+.btn-danger:hover {
+  background: #e04a66;
+  box-shadow: 0 6px 20px rgba(255, 92, 124, 0.4);
+}
+
+.flashcard-reveal-area {
+  margin-top: 20px;
+}
+
+.flashcard-assessment-area {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-}
-
-.answer-input {
-  width: 100%;
-  padding: 14px 20px;
-  border-radius: var(--radius-md);
-  border: 2px solid var(--border);
-  background: var(--bg-elevated);
-  color: var(--text-primary);
-  font-size: 1.1rem;
-  font-family: var(--font);
-  font-weight: 500;
-  text-align: center;
-  outline: none;
-  transition: all var(--transition);
-}
-
-.answer-input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 4px var(--accent-glow);
-}
-
-.answer-input.correct {
-  border-color: var(--success);
-  box-shadow: 0 0 0 4px rgba(46, 232, 154, 0.15);
-}
-
-.answer-input.wrong {
-  border-color: var(--danger);
-  box-shadow: 0 0 0 4px rgba(255, 92, 124, 0.15);
-}
-
-/* Result */
-.flashcard-result {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
+  gap: 20px;
+  margin-top: 10px;
   animation: fadeIn 0.3s ease;
 }
 
-.result-icon {
-  font-size: 3rem;
-  line-height: 1;
-}
-
-.result-correct-answer {
-  font-size: 1.2rem;
-  font-weight: 600;
-}
-
-.result-your-answer {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-}
-
-.stage-change {
+.revealed-label {
   font-size: 0.85rem;
-  font-weight: 600;
-  padding: 6px 14px;
-  border-radius: var(--radius-sm);
-  margin-top: 4px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-.stage-change.up {
+.revealed-translation {
+  font-size: 1.5rem;
+  font-weight: 700;
   color: var(--success);
-  background: var(--success-bg);
 }
 
-.stage-change.down {
-  color: var(--danger);
-  background: var(--danger-bg);
+.assessment-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.assessment-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 10px;
 }
 
 /* ===== RESULTS SCREEN ===== */
