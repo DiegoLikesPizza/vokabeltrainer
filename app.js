@@ -415,13 +415,41 @@
   // Landing: Copy AI Prompt
   if (copyPromptBtn) {
     copyPromptBtn.addEventListener('click', () => {
-      navigator.clipboard.writeText(aiPromptText.textContent).then(() => {
+      const textToCopy = aiPromptText.textContent;
+      
+      const onSuccess = () => {
         toast('📋 Prompt kopiert!');
         copyPromptBtn.textContent = '✅ Kopiert';
         setTimeout(() => copyPromptBtn.textContent = '📋 Kopieren', 2000);
-      }).catch(() => {
+      };
+
+      const onError = () => {
         toast('❌ Fehler beim Kopieren');
-      });
+      };
+
+      // Modern Clipboard API requires HTTPS (secure context)
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(textToCopy).then(onSuccess).catch(onError);
+      } else {
+        // Fallback for HTTP domains
+        try {
+          const textArea = document.createElement("textarea");
+          textArea.value = textToCopy;
+          textArea.style.position = "fixed";
+          textArea.style.left = "-999999px";
+          textArea.style.top = "-999999px";
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+          const successful = document.execCommand('copy');
+          textArea.remove();
+          
+          if (successful) onSuccess();
+          else onError();
+        } catch (err) {
+          onError();
+        }
+      }
     });
   }
 
