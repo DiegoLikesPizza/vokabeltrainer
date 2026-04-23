@@ -431,18 +431,19 @@
       if (navigator.clipboard && window.isSecureContext) {
         navigator.clipboard.writeText(textToCopy).then(onSuccess).catch(onError);
       } else {
-        // Fallback for HTTP domains
+        // Fallback for HTTP domains / Mobile Webviews
         try {
-          const textArea = document.createElement("textarea");
-          textArea.value = textToCopy;
-          textArea.style.position = "fixed";
-          textArea.style.left = "-999999px";
-          textArea.style.top = "-999999px";
-          document.body.appendChild(textArea);
-          textArea.focus();
-          textArea.select();
+          const selection = window.getSelection();
+          const range = document.createRange();
+          
+          // Wir selektieren den Text direkt aus dem <pre> Element, 
+          // um iOS/Mobile Bugs mit versteckten Textareas zu vermeiden.
+          range.selectNodeContents(aiPromptText);
+          selection.removeAllRanges();
+          selection.addRange(range);
+          
           const successful = document.execCommand('copy');
-          textArea.remove();
+          selection.removeAllRanges();
           
           if (successful) onSuccess();
           else onError();
