@@ -32,6 +32,34 @@
         <div class="landing-hint">
           <p>Lade eine JSON-Datei mit Vokabeln oder importiere ein gespeichertes Profil.</p>
         </div>
+
+        <div class="ai-prompt-panel">
+          <div class="ai-prompt-header">
+            <h3>🤖 KI-Scanner nutzen</h3>
+            <button class="btn btn-secondary btn-sm" id="copy-prompt-btn" style="padding: 6px 12px; font-size: 0.8rem;">📋 Kopieren</button>
+          </div>
+          <p class="ai-prompt-desc">Mach ein Foto deiner Vokabeln, sende es an eine KI (wie ChatGPT oder Claude) und füge diesen Prompt ein, um die passende JSON-Datei zu generieren:</p>
+          <pre class="ai-prompt-code" id="ai-prompt-text">Act as a precise OCR and data extraction tool.
+
+**Task:** Extract all vocabulary pairs from the provided image(s) and convert them into a raw JSON array.
+
+**Output Format:**
+Return a single JSON array of objects. Each object must strictly follow this key-value pair structure:
+[
+ {
+   "English": "extracted English term",
+   "German": "extracted German translation"
+ },
+ ...
+]
+
+**Extraction Rules:**
+1. **Verbs:** Include the "to" prefix and any placeholders like "(sb/sth)" exactly as they appear in the source.
+2. **Nouns:** Include gender markers or plural indicators if they are part of the text.
+3. **Accuracy:** Maintain the original casing. Ensure German Umlauts (ä, ö, ü) and Eszett (ß) are preserved.
+4. **Cleanup:** Remove page numbers, phonetic transcriptions (IPA), and icons. Only extract the words and their translations.
+5. **No Prose:** Output ONLY the JSON code block. Do not provide an introduction or conclusion.</pre>
+        </div>
       </div>
     </section>
 
