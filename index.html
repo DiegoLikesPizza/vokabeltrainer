@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vokabeltrainer — Karteikarten</title>
+  <meta name="description" content="Lerne Vokabeln mit dem Leitner-Karteikasten-System. Importiere deine eigenen Vokabellisten und trainiere effizient.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- LANDING SCREEN -->
+    <section id="landing-screen" class="screen active">
+      <div class="landing-container">
+        <div class="logo-area">
+          <div class="logo-icon">📚</div>
+          <h1>Vokabeltrainer</h1>
+          <p class="subtitle">Lerne smarter mit dem Leitner-System</p>
+        </div>
+        <div class="landing-actions">
+          <label class="btn btn-primary btn-lg" id="import-vocab-btn">
+            <span class="btn-icon">📄</span> Vokabel-JSON laden
+            <input type="file" id="vocab-file-input" accept=".json" hidden>
+          </label>
+          <label class="btn btn-secondary btn-lg" id="import-profile-btn">
+            <span class="btn-icon">👤</span> Profil importieren
+            <input type="file" id="profile-file-input" accept=".json" hidden>
+          </label>
+        </div>
+        <div class="landing-hint">
+          <p>Lade eine JSON-Datei mit Vokabeln oder importiere ein gespeichertes Profil.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- DASHBOARD SCREEN -->
+    <section id="dashboard-screen" class="screen">
+      <header class="top-bar">
+        <div class="top-bar-left">
+          <span class="logo-small">📚</span>
+          <h2>Vokabeltrainer</h2>
+        </div>
+        <div class="top-bar-right">
+          <button class="btn btn-ghost" id="add-more-btn" title="Weitere Vokabeln laden">
+            <span>➕</span> Hinzufügen
+            <input type="file" id="add-vocab-file-input" accept=".json" hidden style="position:absolute;width:0;height:0;opacity:0;">
+          </button>
+          <button class="btn btn-ghost" id="export-btn" title="Profil exportieren">
+            <span>💾</span> Exportieren
+          </button>
+          <button class="btn btn-ghost btn-danger" id="reset-btn" title="Alles zurücksetzen">
+            <span>🗑️</span> Reset
+          </button>
+        </div>
+      </header>
+
+      <div class="dashboard-body">
+        <!-- Stage Overview -->
+        <div class="stages-overview">
+          <h3>Karteikasten-Übersicht</h3>
+          <div class="stages-grid" id="stages-grid">
+            <!-- Filled by JS -->
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-bar" id="stats-bar">
+          <div class="stat-item">
+            <span class="stat-value" id="stat-total">0</span>
+            <span class="stat-label">Gesamt</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value" id="stat-mastered">0</span>
+            <span class="stat-label">Gemeistert</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value" id="stat-progress">0%</span>
+            <span class="stat-label">Fortschritt</span>
+          </div>
+        </div>
+
+        <!-- Direction Toggle -->
+        <div class="direction-toggle">
+          <span class="direction-label">Abfragerichtung:</span>
+          <button class="btn btn-toggle active" id="dir-en-de" data-dir="en-de">EN → DE</button>
+          <button class="btn btn-toggle" id="dir-de-en" data-dir="de-en">DE → EN</button>
+          <button class="btn btn-toggle" id="dir-random" data-dir="random">🔀 Zufall</button>
+        </div>
+
+        <!-- Start Button -->
+        <button class="btn btn-primary btn-xl" id="start-practice-btn">
+          <span class="btn-icon">🎯</span> Training starten
+        </button>
+      </div>
+    </section>
+
+    <!-- PRACTICE SCREEN -->
+    <section id="practice-screen" class="screen">
+      <header class="top-bar practice-bar">
+        <button class="btn btn-ghost" id="back-to-dashboard-btn">← Zurück</button>
+        <div class="practice-progress">
+          <span id="practice-counter">0 / 0</span>
+          <div class="progress-bar-mini">
+            <div class="progress-bar-mini-fill" id="practice-progress-fill"></div>
+          </div>
+        </div>
+        <div class="practice-score">
+          <span class="score-correct" id="score-correct">✅ 0</span>
+          <span class="score-wrong" id="score-wrong">❌ 0</span>
+        </div>
+      </header>
+
+      <div class="card-area">
+        <div class="flashcard" id="flashcard">
+          <div class="flashcard-stage" id="flashcard-stage">Fach 1</div>
+          <div class="flashcard-prompt" id="flashcard-prompt">Loading...</div>
+          <div class="flashcard-answer-area" id="flashcard-answer-area">
+            <input type="text" id="answer-input" class="answer-input" placeholder="Deine Antwort..." autocomplete="off" spellcheck="false">
+            <button class="btn btn-primary" id="check-btn">Prüfen</button>
+          </div>
+          <div class="flashcard-result" id="flashcard-result" style="display:none;">
+            <div class="result-icon" id="result-icon"></div>
+            <div class="result-correct-answer" id="result-correct-answer"></div>
+            <div class="result-your-answer" id="result-your-answer"></div>
+            <div class="stage-change" id="stage-change"></div>
+            <button class="btn btn-primary" id="next-btn">Nächste Karte →</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RESULTS SCREEN -->
+    <section id="results-screen" class="screen">
+      <div class="results-container">
+        <div class="results-header">
+          <div class="results-icon">🏆</div>
+          <h2>Runde abgeschlossen!</h2>
+        </div>
+        <div class="results-stats">
+          <div class="result-stat correct">
+            <span class="result-stat-value" id="final-correct">0</span>
+            <span class="result-stat-label">Richtig</span>
+          </div>
+          <div class="result-stat wrong">
+            <span class="result-stat-value" id="final-wrong">0</span>
+            <span class="result-stat-label">Falsch</span>
+          </div>
+          <div class="result-stat rate">
+            <span class="result-stat-value" id="final-rate">0%</span>
+            <span class="result-stat-label">Quote</span>
+          </div>
+        </div>
+        <div class="results-actions">
+          <button class="btn btn-primary btn-lg" id="results-again-btn">🔄 Nochmal trainieren</button>
+          <button class="btn btn-secondary btn-lg" id="results-dashboard-btn">📊 Zum Dashboard</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
