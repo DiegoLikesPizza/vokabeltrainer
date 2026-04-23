@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Vokabeltrainer — Karteikarten</title>
-  <meta name="description" content="Lerne Vokabeln mit dem Leitner-Karteikasten-System. Importiere deine eigenen Vokabellisten und trainiere effizient.">
+  <meta name="description"
+    content="Lerne Vokabeln mit dem Leitner-Karteikasten-System. Importiere deine eigenen Vokabellisten und trainiere effizient.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=2">
+  <link rel="stylesheet" href="style.css?v=3">
 </head>
+
 <body>
   <div id="app">
     <!-- LANDING SCREEN -->
@@ -36,9 +39,11 @@
         <div class="ai-prompt-panel">
           <div class="ai-prompt-header">
             <h3>🤖 KI-Scanner nutzen</h3>
-            <button class="btn btn-secondary btn-sm" id="copy-prompt-btn" style="padding: 6px 12px; font-size: 0.8rem;">📋 Kopieren</button>
+            <button class="btn btn-secondary btn-sm" id="copy-prompt-btn"
+              style="padding: 6px 12px; font-size: 0.8rem;">📋 Kopieren</button>
           </div>
-          <p class="ai-prompt-desc">Mach ein Foto deiner Vokabeln, sende es an eine KI (wie ChatGPT oder Claude) und füge diesen Prompt ein, um die passende JSON-Datei zu generieren:</p>
+          <p class="ai-prompt-desc">Mach ein Foto deiner Vokabeln, sende es an eine KI (wie ChatGPT oder Claude) und
+            füge diesen Prompt ein, um die passende JSON-Datei zu generieren:</p>
           <pre class="ai-prompt-code" id="ai-prompt-text">Act as a precise OCR and data extraction tool.
 
 **Task:** Extract all vocabulary pairs from the provided image(s) and convert them into a raw JSON array.
@@ -73,7 +78,8 @@ Return a single JSON array of objects. Each object must strictly follow this key
         <div class="top-bar-right">
           <button class="btn btn-ghost" id="add-more-btn" title="Weitere Vokabeln laden">
             <span>➕</span> Hinzufügen
-            <input type="file" id="add-vocab-file-input" accept=".json" hidden style="position:absolute;width:0;height:0;opacity:0;">
+            <input type="file" id="add-vocab-file-input" accept=".json" hidden
+              style="position:absolute;width:0;height:0;opacity:0;">
           </button>
           <button class="btn btn-ghost" id="export-btn" title="Profil exportieren">
             <span>💾</span> Exportieren
@@ -191,4 +197,5 @@ Return a single JSON array of objects. Each object must strictly follow this key
 
   <script src="app.js?v=2"></script>
 </body>
+
 </html>
