@@ -28,6 +28,8 @@
   // Landing
   const vocabFileInput = $('#vocab-file-input');
   const profileFileInput = $('#profile-file-input');
+  const copyPromptBtn = $('#copy-prompt-btn');
+  const aiPromptText = $('#ai-prompt-text');
 
   // Dashboard
   const stagesGrid = $('#stages-grid');
@@ -409,6 +411,19 @@
   }
 
   // ── Event Listeners ──
+
+  // Landing: Copy AI Prompt
+  if (copyPromptBtn) {
+    copyPromptBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(aiPromptText.textContent).then(() => {
+        toast('📋 Prompt kopiert!');
+        copyPromptBtn.textContent = '✅ Kopiert';
+        setTimeout(() => copyPromptBtn.textContent = '📋 Kopieren', 2000);
+      }).catch(() => {
+        toast('❌ Fehler beim Kopieren');
+      });
+    });
+  }
 
   // Landing: Load vocab JSON
   vocabFileInput.addEventListener('change', async (e) => {
