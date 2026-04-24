@@ -249,12 +249,16 @@ export default function GuestDashboard() {
             Gemeistert: {session.vocabs.filter(v => v.stage === 7).length} Vokabeln (Fach 7)
           </p>
           <div className="stages-grid">
-            {stageCounts.map((c, i) => (
-              <div key={i} className={`stage-card ${c === 0 ? 'empty' : ''}`}>
-                <h4>Fach {i + 1}</h4>
-                <div className="stage-count">{c} Karten</div>
-              </div>
-            ))}
+            {stageCounts.map((c, i) => {
+              const stageLabels = ['Neu', 'Beginner', 'Lernend', 'Kenner', 'Fortgeschr.', 'Experte', 'Gemeistert'];
+              return (
+                <div key={i} className="stage-card" data-stage={i + 1}>
+                  <div className="stage-number">Fach {i + 1}</div>
+                  <div className="stage-count">{c}</div>
+                  <div className="stage-label">{stageLabels[i]}</div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
