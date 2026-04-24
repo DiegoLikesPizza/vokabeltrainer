@@ -11,7 +11,8 @@ export async function getGlobalStats() {
     SELECT 
       IFNULL(SUM(v.correct_count), 0) as totalCorrect,
       IFNULL(SUM(v.wrong_count), 0) as totalWrong,
-      COUNT(v.id) as totalVocabs
+      COUNT(v.id) as totalVocabs,
+      COUNT(CASE WHEN v.stage = 7 THEN 1 END) as masteredCount
     FROM notebooks n
     LEFT JOIN vocabs v ON v.notebook_id = n.id
     WHERE n.user_id = ?

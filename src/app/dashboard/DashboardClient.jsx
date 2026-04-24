@@ -55,8 +55,8 @@ export default function DashboardClient({ notebooks, stats, createNotebook, dele
             <span className="stat-label">Gesamt-Vokabeln</span>
           </div>
           <div className="stat-item">
-            <span className="stat-value">{stats.totalCorrect}</span>
-            <span className="stat-label">Gemeistert (Hits)</span>
+            <span className="stat-value">{stats.masteredCount}</span>
+            <span className="stat-label">Gemeistert (Fach 7)</span>
           </div>
           <div className="stat-item">
             <span className="stat-value">{progressPercent}%</span>
