@@ -1,6 +1,6 @@
 'use client';
 
-import { useTransition, useRef } from 'react';
+import { useState, useTransition, useRef } from 'react';
 import Link from 'next/link';
 import { useToast } from '@/components/ToastProvider';
 
@@ -8,6 +8,7 @@ export default function NotebookClient({ notebook, vocabs, importVocabs }) {
   const [isPending, startTransition] = useTransition();
   const fileInputRef = useRef(null);
   const toast = useToast();
+  const [direction, setDirection] = useState('en-de');
 
   const handleImport = (e) => {
     const file = e.target.files[0];
@@ -81,8 +82,15 @@ export default function NotebookClient({ notebook, vocabs, importVocabs }) {
           </div>
         </div>
 
-        <div style={{ marginTop: '40px', textAlign: 'center' }}>
-          <Link href={`/dashboard/notebook/${notebook.id}/practice`} className="btn btn-primary btn-xl" style={{textDecoration: 'none'}}>
+        <div style={{ marginTop: '40px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+          <div className="direction-toggle">
+            <span className="direction-label">Abfragerichtung:</span>
+            <button className={`btn btn-toggle ${direction === 'en-de' ? 'active' : ''}`} onClick={() => setDirection('en-de')}>EN → DE</button>
+            <button className={`btn btn-toggle ${direction === 'de-en' ? 'active' : ''}`} onClick={() => setDirection('de-en')}>DE → EN</button>
+            <button className={`btn btn-toggle ${direction === 'random' ? 'active' : ''}`} onClick={() => setDirection('random')}>🔀 Zufall</button>
+          </div>
+
+          <Link href={`/dashboard/notebook/${notebook.id}/practice?dir=${direction}`} className="btn btn-primary btn-xl" style={{textDecoration: 'none'}}>
             <span className="btn-icon">🎯</span> Training starten
           </Link>
         </div>

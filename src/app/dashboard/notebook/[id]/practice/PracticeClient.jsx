@@ -2,8 +2,12 @@
 
 import { useState, useTransition, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 export default function PracticeClient({ notebook, initialVocabs, updateVocabStage }) {
+  const searchParams = useSearchParams();
+  const preferredDir = searchParams.get('dir') || 'en-de';
+  
   const [queue, setQueue] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [scoreCorrect, setScoreCorrect] = useState(0);
@@ -13,7 +17,6 @@ export default function PracticeClient({ notebook, initialVocabs, updateVocabSta
 
   useEffect(() => {
     // Generate practice queue using weights (Leitner System)
-    // Lower stages have higher weights (Stage 1 = weight 7, Stage 7 = weight 1)
     const weighted = [];
     initialVocabs.forEach(v => {
       const weight = 8 - (v.stage || 1);
@@ -34,14 +37,23 @@ export default function PracticeClient({ notebook, initialVocabs, updateVocabSta
       if (finalQueue.length >= maxCards) break;
       if (!seen.has(v.id)) {
         seen.add(v.id);
-        finalQueue.push(v);
+        
+        // Resolve direction for this card
+        let effectiveDir = preferredDir;
+        if (preferredDir === 'random') {
+          effectiveDir = Math.random() < 0.5 ? 'en-de' : 'de-en';
+        }
+
+        finalQueue.push({ ...v, effectiveDir });
       }
     }
 
     setQueue(finalQueue);
-  }, [initialVocabs]);
+  }, [initialVocabs, preferredDir]);
 
   const currentVocab = queue[currentIndex];
+  const prompt = currentVocab?.effectiveDir === 'en-de' ? currentVocab?.english : currentVocab?.german;
+  const answer = currentVocab?.effectiveDir === 'en-de' ? currentVocab?.german : currentVocab?.english;
 
   const handleAssessment = (isCorrect) => {
     if (isPending || !currentVocab) return;
@@ -113,7 +125,7 @@ export default function PracticeClient({ notebook, initialVocabs, updateVocabSta
             </div>
           </div>
           <div className="results-actions" style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
-            <Link href={`/dashboard/notebook/${notebook.id}/practice`} className="btn btn-primary btn-lg" style={{textDecoration:'none'}}>🔄 Nochmal trainieren</Link>
+            <Link href={`/dashboard/notebook/${notebook.id}/practice?dir=${preferredDir}`} className="btn btn-primary btn-lg" style={{textDecoration:'none'}}>🔄 Nochmal trainieren</Link>
             <Link href={`/dashboard/notebook/${notebook.id}`} className="btn btn-secondary btn-lg" style={{textDecoration:'none'}}>📊 Zum Notizbuch</Link>
           </div>
         </div>
@@ -140,7 +152,7 @@ export default function PracticeClient({ notebook, initialVocabs, updateVocabSta
       <div className="card-area" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div className="flashcard" style={{ opacity: isPending ? 0.5 : 1, transition: 'opacity 0.2s', width: '90%', maxWidth: '500px' }}>
           <div className="flashcard-stage" style={{ background: `var(--stage-${currentVocab.stage})` }}>Fach {currentVocab.stage}</div>
-          <div className="flashcard-prompt">{currentVocab.english}</div>
+          <div className="flashcard-prompt">{prompt}</div>
           
           {!isRevealed ? (
             <div className="flashcard-reveal-area">
@@ -152,7 +164,7 @@ export default function PracticeClient({ notebook, initialVocabs, updateVocabSta
             <div className="flashcard-assessment-area">
               <div className="revealed-label" style={{ color: 'var(--text-secondary)' }}>Lösung:</div>
               <div className="revealed-translation" style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: '15px 0' }}>
-                {currentVocab.german}
+                {answer}
               </div>
               <div className="assessment-actions" style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
                 <button className="btn btn-danger btn-lg" onClick={() => handleAssessment(false)}>❌ Nicht gewusst</button>

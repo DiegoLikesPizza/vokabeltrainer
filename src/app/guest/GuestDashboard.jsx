@@ -121,7 +121,13 @@ export default function GuestDashboard() {
       if (queue.length >= max) break;
       if (!seen.has(v.id)) {
         seen.add(v.id);
-        queue.push(v);
+        
+        let effectiveDir = session.direction;
+        if (session.direction === 'random') {
+          effectiveDir = Math.random() < 0.5 ? 'en-de' : 'de-en';
+        }
+        
+        queue.push({ ...v, effectiveDir });
       }
     }
 
@@ -163,6 +169,9 @@ export default function GuestDashboard() {
 
   if (practiceState && !practiceState.finished) {
     const current = practiceState.queue[practiceState.index];
+    const prompt = current.effectiveDir === 'en-de' ? current.english : current.german;
+    const answer = current.effectiveDir === 'en-de' ? current.german : current.english;
+
     return (
       <section className="screen active" style={{ display: 'flex', flexDirection: 'column' }}>
         <header className="top-bar practice-bar">
@@ -178,14 +187,14 @@ export default function GuestDashboard() {
         <div className="card-area" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="flashcard" style={{ width: '90%', maxWidth: '500px' }}>
             <div className="flashcard-stage" style={{ background: `var(--stage-${current.stage})` }}>Fach {current.stage}</div>
-            <div className="flashcard-prompt">{current.english}</div>
+            <div className="flashcard-prompt">{prompt}</div>
             {!practiceState.revealed ? (
               <div className="flashcard-reveal-area">
                 <button className="btn btn-primary btn-lg" onClick={() => setPracticeState(p => ({ ...p, revealed: true }))}>Lösung anzeigen</button>
               </div>
             ) : (
               <div className="flashcard-assessment-area">
-                <div style={{ fontSize: '1.5rem', margin: '20px 0' }}>{current.german}</div>
+                <div style={{ fontSize: '1.5rem', margin: '20px 0' }}>{answer}</div>
                 <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
                   <button className="btn btn-danger btn-lg" onClick={() => handleAssessment(false)}>Falsch</button>
                   <button className="btn btn-success btn-lg" onClick={() => handleAssessment(true)}>Richtig</button>
@@ -201,7 +210,7 @@ export default function GuestDashboard() {
   if (practiceState && practiceState.finished) {
     return (
       <section className="screen active" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div className="results-container">
+        <div className="results-container" style={{textAlign:'center'}}>
           <div style={{fontSize: '3rem', marginBottom: '10px'}}>🏆</div>
           <h2>Training abgeschlossen!</h2>
           <div style={{ margin: '20px 0', fontSize: '1.2rem' }}>
@@ -262,7 +271,14 @@ export default function GuestDashboard() {
           </div>
         </div>
 
-        <div style={{ marginTop: '30px', textAlign: 'center' }}>
+        <div style={{ marginTop: '30px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+          <div className="direction-toggle">
+            <span className="direction-label">Abfragerichtung:</span>
+            <button className={`btn btn-toggle ${session.direction === 'en-de' ? 'active' : ''}`} onClick={() => setSession(s => ({...s, direction: 'en-de'}))}>EN → DE</button>
+            <button className={`btn btn-toggle ${session.direction === 'de-en' ? 'active' : ''}`} onClick={() => setSession(s => ({...s, direction: 'de-en'}))}>DE → EN</button>
+            <button className={`btn btn-toggle ${session.direction === 'random' ? 'active' : ''}`} onClick={() => setSession(s => ({...s, direction: 'random'}))}>🔀 Zufall</button>
+          </div>
+
           {session.vocabs.length > 0 && (
             <button className="btn btn-primary btn-xl" onClick={startPractice}>Training starten</button>
           )}
