@@ -68,12 +68,16 @@ export default function NotebookClient({ notebook, vocabs, importVocabs }) {
         <div className="stages-overview" style={{ marginTop: '20px' }}>
           <h3>Karteikasten-Übersicht</h3>
           <div className="stages-grid">
-            {stagesCount.map((count, i) => (
-              <div key={i} className={`stage-card ${count > 0 ? '' : 'empty'}`}>
-                <h4>Fach {i + 1}</h4>
-                <div className="stage-count">{count} Karten</div>
-              </div>
-            ))}
+            {stagesCount.map((count, i) => {
+              const stageLabels = ['Neu', 'Beginner', 'Lernend', 'Kenner', 'Fortgeschr.', 'Experte', 'Gemeistert'];
+              return (
+                <div key={i} className="stage-card" data-stage={i + 1}>
+                  <div className="stage-number">Fach {i + 1}</div>
+                  <div className="stage-count">{count}</div>
+                  <div className="stage-label">{stageLabels[i]}</div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
