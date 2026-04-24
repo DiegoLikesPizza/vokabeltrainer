@@ -14,6 +14,7 @@ export default function PracticeClient({ notebook, initialVocabs, updateVocabSta
   const [scoreWrong, setScoreWrong] = useState(0);
   const [isRevealed, setIsRevealed] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [round, setRound] = useState(0);
 
   useEffect(() => {
     // Generate practice queue using weights (Leitner System)
@@ -49,7 +50,7 @@ export default function PracticeClient({ notebook, initialVocabs, updateVocabSta
     }
 
     setQueue(finalQueue);
-  }, [initialVocabs, preferredDir]);
+  }, [initialVocabs, preferredDir, round]);
 
   const currentVocab = queue[currentIndex];
   const prompt = currentVocab?.effectiveDir === 'en-de' ? currentVocab?.english : currentVocab?.german;
@@ -72,6 +73,14 @@ export default function PracticeClient({ notebook, initialVocabs, updateVocabSta
       setIsRevealed(false);
       setCurrentIndex(i => i + 1);
     });
+  };
+
+  const resetPractice = () => {
+    setCurrentIndex(0);
+    setScoreCorrect(0);
+    setScoreWrong(0);
+    setIsRevealed(false);
+    setRound(r => r + 1);
   };
 
   useEffect(() => {
@@ -125,7 +134,7 @@ export default function PracticeClient({ notebook, initialVocabs, updateVocabSta
             </div>
           </div>
           <div className="results-actions" style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
-            <Link href={`/dashboard/notebook/${notebook.id}/practice?dir=${preferredDir}`} className="btn btn-primary btn-lg" style={{textDecoration:'none'}}>🔄 Nochmal trainieren</Link>
+            <button onClick={resetPractice} className="btn btn-primary btn-lg">🔄 Nochmal trainieren</button>
             <Link href={`/dashboard/notebook/${notebook.id}`} className="btn btn-secondary btn-lg" style={{textDecoration:'none'}}>📊 Zum Notizbuch</Link>
           </div>
         </div>
