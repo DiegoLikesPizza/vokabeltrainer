@@ -90,7 +90,7 @@ export default function PracticeClient({ notebook, initialVocabs, updateVocabSta
             </div>
           </div>
           <div className="results-actions" style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
-            <a href={`/dashboard/notebook/${notebook.id}/practice`} className="btn btn-primary btn-lg" style={{textDecoration:'none'}}>🔄 Nochmal trainieren</a>
+            <Link href={`/dashboard/notebook/${notebook.id}/practice`} className="btn btn-primary btn-lg" style={{textDecoration:'none'}}>🔄 Nochmal trainieren</Link>
             <Link href={`/dashboard/notebook/${notebook.id}`} className="btn btn-secondary btn-lg" style={{textDecoration:'none'}}>📊 Zum Notizbuch</Link>
           </div>
         </div>
