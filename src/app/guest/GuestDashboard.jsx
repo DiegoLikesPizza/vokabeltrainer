@@ -105,9 +105,28 @@ export default function GuestDashboard() {
 
   const startPractice = () => {
     if (!session.vocabs.length) return;
-    const shuffled = [...session.vocabs].sort(() => Math.random() - 0.5);
+    
+    const weighted = [];
+    session.vocabs.forEach(v => {
+      const weight = 8 - (v.stage || 1);
+      for (let i = 0; i < weight; i++) weighted.push(v);
+    });
+
+    const shuffled = [...weighted].sort(() => Math.random() - 0.5);
+    const seen = new Set();
+    const queue = [];
+    const max = Math.min(20, session.vocabs.length);
+
+    for (const v of shuffled) {
+      if (queue.length >= max) break;
+      if (!seen.has(v.id)) {
+        seen.add(v.id);
+        queue.push(v);
+      }
+    }
+
     setPracticeState({
-      queue: shuffled,
+      queue: queue,
       index: 0,
       correct: 0,
       wrong: 0,
@@ -226,6 +245,9 @@ export default function GuestDashboard() {
 
         <div className="stages-overview">
           <h3>Fortschritt ({session.vocabs.length} Vokabeln)</h3>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '15px' }}>
+            Gemeistert: {session.vocabs.filter(v => v.stage === 7).length} Vokabeln (Fach 7)
+          </p>
           <div className="stages-grid">
             {stageCounts.map((c, i) => (
               <div key={i} className={`stage-card ${c === 0 ? 'empty' : ''}`}>

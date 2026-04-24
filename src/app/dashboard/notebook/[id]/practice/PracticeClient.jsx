@@ -12,10 +12,33 @@ export default function PracticeClient({ notebook, initialVocabs, updateVocabSta
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
-    // Generate practice queue using weights
-    // In a fuller app, we'd map weights, but here we dynamically shuffle them
-    const q = [...initialVocabs].sort(() => Math.random() - 0.5);
-    setQueue(q);
+    // Generate practice queue using weights (Leitner System)
+    // Lower stages have higher weights (Stage 1 = weight 7, Stage 7 = weight 1)
+    const weighted = [];
+    initialVocabs.forEach(v => {
+      const weight = 8 - (v.stage || 1);
+      for (let i = 0; i < weight; i++) {
+        weighted.push(v);
+      }
+    });
+
+    // Shuffle weighted pool
+    const shuffled = [...weighted].sort(() => Math.random() - 0.5);
+
+    // Deduplicate and pick first 20
+    const seen = new Set();
+    const finalQueue = [];
+    const maxCards = Math.min(20, initialVocabs.length);
+
+    for (const v of shuffled) {
+      if (finalQueue.length >= maxCards) break;
+      if (!seen.has(v.id)) {
+        seen.add(v.id);
+        finalQueue.push(v);
+      }
+    }
+
+    setQueue(finalQueue);
   }, [initialVocabs]);
 
   const currentVocab = queue[currentIndex];
