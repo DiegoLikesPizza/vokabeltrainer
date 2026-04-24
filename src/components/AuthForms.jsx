@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useActionState } from 'react';
 import { useToast } from './ToastProvider';
+import Link from 'next/link';
 
 export function AuthForms({ loginAction, registerAction }) {
   const [mode, setMode] = useState('LANDING'); // LANDING, LOGIN, REGISTER
@@ -17,9 +18,9 @@ export function AuthForms({ loginAction, registerAction }) {
           <span className="btn-icon">📝</span> Account erstellen
         </button>
         <div style={{ width: '100%', marginTop: '10px' }}>
-          <a href="/guest" className="btn btn-ghost" style={{ width: '100%', textDecoration: 'none' }}>
+          <Link href="/guest" className="btn btn-ghost" style={{ width: '100%', textDecoration: 'none' }}>
             🏃 Als Gast fortfahren (kein Account nötig)
-          </a>
+          </Link>
         </div>
       </div>
     );
