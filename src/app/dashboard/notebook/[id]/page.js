@@ -1,6 +1,6 @@
 import { getSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { getVocabs, importVocabs } from '@/app/actions/studying';
+import { getVocabs, importVocabs, addVocab, updateVocab, deleteVocab } from '@/app/actions/studying';
 import NotebookClient from './NotebookClient';
 import db from '@/lib/db';
 
@@ -23,6 +23,9 @@ export default async function NotebookPage({ params }) {
       notebook={nbRecord} 
       vocabs={vocabs} 
       importVocabs={importVocabs} 
+      addVocab={addVocab}
+      updateVocab={updateVocab}
+      deleteVocab={deleteVocab}
     />
   );
 }
