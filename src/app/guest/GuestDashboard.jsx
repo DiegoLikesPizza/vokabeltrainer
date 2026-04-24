@@ -217,7 +217,10 @@ export default function GuestDashboard() {
             Richtig: {practiceState.correct} | Falsch: {practiceState.wrong}<br/>
             Quote: {Math.round((practiceState.correct / (practiceState.correct + practiceState.wrong)) * 100)}%
           </div>
-          <button className="btn btn-primary" onClick={() => setPracticeState(null)}>Zum Dashboard</button>
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+            <button className="btn btn-primary" onClick={startPractice}>🔄 Nochmal trainieren</button>
+            <button className="btn btn-secondary" onClick={() => setPracticeState(null)}>Zum Dashboard</button>
+          </div>
         </div>
       </section>
     );
