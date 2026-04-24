@@ -8,6 +8,8 @@ export default function GuestDashboard() {
   const [session, setSession] = useState(null); // { vocabs: [], direction: 'en-de' }
   const [practiceState, setPracticeState] = useState(null); 
   const [isLoading, setIsLoading] = useState(true);
+  const [isManaging, setIsManaging] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const fileInputRef = useRef(null);
   const profileInputRef = useRef(null);
   const toast = useToast();
@@ -36,13 +38,13 @@ export default function GuestDashboard() {
     reader.onload = (event) => {
       try {
         const raw = JSON.parse(event.target.result);
-        if (!Array.isArray(raw)) throw new Error('Not an array');
+        const importedArr = Array.isArray(raw) ? raw : (raw.vocabs || []);
         
-        const newVocabs = raw.map(v => ({
+        const newVocabs = importedArr.map(v => ({
           id: Math.random().toString(36).substr(2, 9),
           english: v.English || v.english || '',
           german: v.German || v.german || '',
-          stage: 1
+          stage: v.stage || 1
         })).filter(v => v.english && v.german);
 
         setSession(prev => ({ ...prev, vocabs: [...prev.vocabs, ...newVocabs] }));
@@ -165,6 +167,41 @@ export default function GuestDashboard() {
     });
   };
 
+  const addGuestVocab = (e) => {
+    e.preventDefault();
+    const f = new FormData(e.target);
+    const eng = f.get('english');
+    const ger = f.get('german');
+    if(!eng || !ger) return;
+
+    const v = {
+      id: Math.random().toString(36).substr(2, 9),
+      english: eng,
+      german: ger,
+      stage: 1
+    };
+    setSession(s => ({ ...s, vocabs: [v, ...s.vocabs] }));
+    e.target.reset();
+    toast('✅ Hinzugefügt!');
+  };
+
+  const deleteGuestVocab = (id) => {
+    if(!confirm('Löschen?')) return;
+    setSession(s => ({ ...s, vocabs: s.vocabs.filter(v => v.id !== id) }));
+  };
+
+  const updateGuestVocab = (id, e) => {
+    e.preventDefault();
+    const f = new FormData(e.target);
+    const eng = f.get('english');
+    const ger = f.get('german');
+    setSession(s => ({
+      ...s,
+      vocabs: s.vocabs.map(v => v.id === id ? { ...v, english: eng, german: ger } : v)
+    }));
+    setEditingId(null);
+  };
+
   if (isLoading) return <div className="screen active">Lade...</div>;
 
   if (practiceState && !practiceState.finished) {
@@ -237,55 +274,108 @@ export default function GuestDashboard() {
           <h2 style={{ marginLeft: '10px' }}>Gast-Modus 🏃</h2>
         </div>
         <div className="top-bar-right">
-          <button className="btn btn-ghost" onClick={handleExportProfile} disabled={!session.vocabs.length}>💾 Profil sichern</button>
-          <button className="btn btn-ghost btn-danger" onClick={() => { if(confirm('Alles löschen?')) setSession({vocabs:[], direction:'en-de'}) }}>Reset</button>
+          <button className="btn btn-toggle" onClick={() => setIsManaging(!isManaging)}>
+            {isManaging ? '📊 Übersicht' : '📝 Verwalten'}
+          </button>
+          <button className="btn btn-ghost" onClick={handleExportProfile} disabled={!session.vocabs.length}>💾 Export</button>
         </div>
       </header>
-      <div className="dashboard-body" style={{ width: '100%', maxWidth: '800px', margin: '0 auto', textAlign: 'left' }}>
+      <div className="dashboard-body" style={{ width: '100%', maxWidth: '900px', margin: '0 auto', textAlign: 'left' }}>
         
-        <div style={{ background: 'rgba(255,165,0,0.1)', border: '1px solid orange', padding: '15px', borderRadius: 'var(--radius-md)', marginBottom: '20px', fontSize: '0.9rem' }}>
-          ⚠️ <strong>Daten-Sicherheit:</strong> Im Gast-Modus werden Daten nur in diesem Browser gespeichert. Nutze "Profil sichern", um ein Backup zu erstellen oder deine Daten umzuziehen.
-        </div>
+        {!isManaging ? (
+          <>
+            <div className="stages-overview">
+              <h3>Fortschritt ({session.vocabs.length} Vokabeln)</h3>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: '15px' }}>
+                Gemeistert: {session.vocabs.filter(v => v.stage === 7).length} Vokabeln (Fach 7)
+              </p>
+              <div className="stages-grid">
+                {stageCounts.map((c, i) => {
+                  const stageLabels = ['Neu', 'Beginner', 'Lernend', 'Kenner', 'Fortgeschr.', 'Experte', 'Gemeistert'];
+                  return (
+                    <div key={i} className="stage-card" data-stage={i + 1}>
+                      <div className="stage-number">Fach {i + 1}</div>
+                      <div className="stage-count">{c}</div>
+                      <div className="stage-label">{stageLabels[i]}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
 
-        <div className="landing-actions" style={{ marginBottom: '30px', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-          <input type="file" ref={fileInputRef} onChange={handleImportVocabs} hidden accept=".json" />
-          <button className="btn btn-primary" onClick={() => fileInputRef.current.click()} style={{flex: 1}}>Vokabel-JSON laden</button>
-          
-          <input type="file" ref={profileInputRef} onChange={handleImportProfile} hidden accept=".json" />
-          <button className="btn btn-secondary" onClick={() => profileInputRef.current.click()} style={{flex: 1}}>Profil laden (.json)</button>
-        </div>
+            <div style={{ marginTop: '30px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+              <div className="direction-toggle">
+                <span className="direction-label">Abfragerichtung:</span>
+                <button className={`btn btn-toggle ${session.direction === 'en-de' ? 'active' : ''}`} onClick={() => setSession(s => ({...s, direction: 'en-de'}))}>EN → DE</button>
+                <button className={`btn btn-toggle ${session.direction === 'de-en' ? 'active' : ''}`} onClick={() => setSession(s => ({...s, direction: 'de-en'}))}>DE → EN</button>
+                <button className={`btn btn-toggle ${session.direction === 'random' ? 'active' : ''}`} onClick={() => setSession(s => ({...s, direction: 'random'}))}>🔀 Zufall</button>
+              </div>
 
-        <div className="stages-overview">
-          <h3>Fortschritt ({session.vocabs.length} Vokabeln)</h3>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '15px' }}>
-            Gemeistert: {session.vocabs.filter(v => v.stage === 7).length} Vokabeln (Fach 7)
-          </p>
-          <div className="stages-grid">
-            {stageCounts.map((c, i) => {
-              const stageLabels = ['Neu', 'Beginner', 'Lernend', 'Kenner', 'Fortgeschr.', 'Experte', 'Gemeistert'];
-              return (
-                <div key={i} className="stage-card" data-stage={i + 1}>
-                  <div className="stage-number">Fach {i + 1}</div>
-                  <div className="stage-count">{c}</div>
-                  <div className="stage-label">{stageLabels[i]}</div>
-                </div>
-              );
-            })}
+              {session.vocabs.length > 0 && (
+                <button className="btn btn-primary btn-xl" onClick={startPractice}>Training starten</button>
+              )}
+            </div>
+
+            <div className="landing-actions" style={{ marginTop: '40px', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+              <input type="file" ref={fileInputRef} onChange={handleImportVocabs} hidden accept=".json" />
+              <button className="btn btn-secondary" onClick={() => fileInputRef.current.click()} style={{flex: 1}}>📥 Vokabel-JSON laden</button>
+              <input type="file" ref={profileInputRef} onChange={handleImportProfile} hidden accept=".json" />
+              <button className="btn btn-secondary" onClick={() => profileInputRef.current.click()} style={{flex: 1}}>📥 Profil laden (.json)</button>
+            </div>
+          </>
+        ) : (
+          <div className="vocab-manager" style={{ width: '100%' }}>
+            <div style={{ background: 'var(--bg-card)', padding: '20px', borderRadius: 'var(--radius-md)', marginBottom: '30px', border: '1px solid var(--border)' }}>
+              <h3 style={{ marginBottom: '15px' }}>Neue Vokabel hinzufügen</h3>
+              <form onSubmit={addGuestVocab} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                <input name="english" className="input" placeholder="Englisch" style={{ flex: 1, minWidth: '150px' }} required />
+                <input name="german" className="input" placeholder="Deutsch" style={{ flex: 1, minWidth: '150px' }} required />
+                <button type="submit" className="btn btn-primary">Hinzufügen</button>
+              </form>
+            </div>
+
+            <div style={{ background: 'var(--bg-card)', borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid var(--border)' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ background: 'rgba(255,255,255,0.05)', textAlign: 'left' }}>
+                    <th style={{ padding: '12px' }}>Englisch</th>
+                    <th style={{ padding: '12px' }}>Deutsch</th>
+                    <th style={{ padding: '12px', width: '80px' }}>Fach</th>
+                    <th style={{ padding: '12px', width: '120px', textAlign: 'right' }}>Aktionen</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {session.vocabs.map(v => (
+                    <tr key={v.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                      {editingId === v.id ? (
+                        <td colSpan="4" style={{ padding: '10px' }}>
+                          <form onSubmit={(e) => updateGuestVocab(v.id, e)} style={{ display: 'flex', gap: '10px' }}>
+                            <input name="english" className="input" defaultValue={v.english} style={{ flex: 1 }} required />
+                            <input name="german" className="input" defaultValue={v.german} style={{ flex: 1 }} required />
+                            <button type="submit" className="btn btn-success">Sichern</button>
+                            <button type="button" className="btn btn-ghost" onClick={() => setEditingId(null)}>Abbrechen</button>
+                          </form>
+                        </td>
+                      ) : (
+                        <>
+                          <td style={{ padding: '12px' }}>{v.english}</td>
+                          <td style={{ padding: '12px' }}>{v.german}</td>
+                          <td style={{ padding: '12px' }}>
+                            <span style={{ color: `var(--stage-${v.stage})`, fontWeight: 'bold' }}>{v.stage}</span>
+                          </td>
+                          <td style={{ padding: '12px', textAlign: 'right' }}>
+                            <button className="btn btn-ghost" onClick={() => setEditingId(v.id)}>✏️</button>
+                            <button className="btn btn-ghost" onClick={() => deleteGuestVocab(v.id)}>🗑️</button>
+                          </td>
+                        </>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-
-        <div style={{ marginTop: '30px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
-          <div className="direction-toggle">
-            <span className="direction-label">Abfragerichtung:</span>
-            <button className={`btn btn-toggle ${session.direction === 'en-de' ? 'active' : ''}`} onClick={() => setSession(s => ({...s, direction: 'en-de'}))}>EN → DE</button>
-            <button className={`btn btn-toggle ${session.direction === 'de-en' ? 'active' : ''}`} onClick={() => setSession(s => ({...s, direction: 'de-en'}))}>DE → EN</button>
-            <button className={`btn btn-toggle ${session.direction === 'random' ? 'active' : ''}`} onClick={() => setSession(s => ({...s, direction: 'random'}))}>🔀 Zufall</button>
-          </div>
-
-          {session.vocabs.length > 0 && (
-            <button className="btn btn-primary btn-xl" onClick={startPractice}>Training starten</button>
-          )}
-        </div>
+        )}
       </div>
     </section>
   );

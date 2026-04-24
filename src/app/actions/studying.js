@@ -95,3 +95,42 @@ export async function updateVocabStage(vocabId, newStage, isCorrect) {
     WHERE id = ?
   `).run(newStage, correctAdd, wrongAdd, now, vocabId);
 }
+
+export async function addVocab(notebookId, formData) {
+  const session = await getSession();
+  if (!session) throw new Error("Unauthorized");
+
+  const english = formData.get('english');
+  const german = formData.get('german');
+  if (!english || !german) return { error: "Beide Felder müssen ausgefüllt sein." };
+
+  const id = crypto.randomUUID();
+  db.prepare("INSERT INTO vocabs (id, notebook_id, english, german, stage) VALUES (?, ?, ?, ?, 1)").run(id, notebookId, english, german);
+  
+  revalidatePath(`/dashboard/notebook/${notebookId}`);
+  return { success: true };
+}
+
+export async function updateVocab(notebookId, vocabId, formData) {
+  const session = await getSession();
+  if (!session) throw new Error("Unauthorized");
+
+  const english = formData.get('english');
+  const german = formData.get('german');
+  if (!english || !german) return { error: "Beide Felder müssen ausgefüllt sein." };
+
+  db.prepare("UPDATE vocabs SET english = ?, german = ? WHERE id = ?").run(english, german, vocabId);
+  
+  revalidatePath(`/dashboard/notebook/${notebookId}`);
+  return { success: true };
+}
+
+export async function deleteVocab(notebookId, vocabId) {
+  const session = await getSession();
+  if (!session) throw new Error("Unauthorized");
+
+  db.prepare("DELETE FROM vocabs WHERE id = ?").run(vocabId);
+  
+  revalidatePath(`/dashboard/notebook/${notebookId}`);
+  return { success: true };
+}
